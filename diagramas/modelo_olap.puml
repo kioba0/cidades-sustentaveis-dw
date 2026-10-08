@@ -1,0 +1,138 @@
+@startuml modelo_olap
+!theme plain
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam handwritten false
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 60
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    ArrowColor #0284C7
+    BorderColor #475569
+    FontColor #0F172A
+    FontSize 12
+    HeaderBackgroundColor #E2E8F0
+}
+
+' ============================================================================
+' TABELAS DE DIMENSÃO (CONFORMADAS)
+' ============================================================================
+
+entity "Dim_Tempo" as Dim_Tempo <<Dimension>> {
+    * **sk_tempo** : INT [PK]
+    --
+    * data_completa : DATE [UQ]
+    * ano : SMALLINT
+    * mes : TINYINT
+    * nome_mes : VARCHAR(20)
+    * dia : TINYINT
+    * dia_semana : TINYINT
+    * nome_dia_semana : VARCHAR(20)
+    * trimestre : TINYINT
+    * semestre : TINYINT
+    * eh_fim_semana : BOOLEAN
+}
+
+entity "Dim_Bairro" as Dim_Bairro <<Dimension>> {
+    * **sk_bairro** : INT [PK]
+    --
+    * id_bairro_origem : INT [NK]
+    * nome_bairro : VARCHAR(100)
+    * regiao_administrativa : VARCHAR(80)
+    * faixa_populacional : VARCHAR(40)
+    * densidade_demografica : VARCHAR(30)
+    * classe_renda : VARCHAR(30)
+}
+
+entity "Dim_Tipo_Residuo" as Dim_Tipo_Residuo <<Dimension>> {
+    * **sk_tipo_residuo** : INT [PK]
+    --
+    * tipo_residuo_origem : VARCHAR(50) [NK]
+    * categoria_macro : VARCHAR(40)
+    * potencial_reciclagem_pct : DECIMAL(5,2)
+    * fator_emissao_ch4 : DECIMAL(6,3)
+}
+
+entity "Dim_Veiculo" as Dim_Veiculo <<Dimension>> {
+    * **sk_veiculo** : INT [PK]
+    --
+    * id_veiculo_origem : INT [NK]
+    * placa : VARCHAR(10)
+    * modelo : VARCHAR(80)
+    * tipo_veiculo : VARCHAR(40)
+    * empresa_operadora : VARCHAR(100)
+    * faixa_capacidade : VARCHAR(30)
+}
+
+entity "Dim_Destino" as Dim_Destino <<Dimension>> {
+    * **sk_destino** : INT [PK]
+    --
+    * id_destino_origem : INT [NK]
+    * nome_instalacao : VARCHAR(120)
+    * tipo_instalacao : VARCHAR(60)
+    * bandeira_sustentavel : VARCHAR(20)
+}
+
+entity "Dim_Severidade" as Dim_Severidade <<Dimension>> {
+    * **sk_severidade** : INT [PK]
+    --
+    * nivel_severidade : VARCHAR(50) [NK]
+    * impacto_risco_geologico : VARCHAR(10)
+}
+
+' ============================================================================
+' TABELAS DE FATOS
+' ============================================================================
+
+entity "Fato_Coleta_Residuos" as Fato_Coleta <<Fact>> {
+    * **sk_fato_coleta** : BIGINT [PK]
+    --
+    * sk_tempo : INT [FK]
+    * sk_bairro : INT [FK]
+    * sk_tipo_residuo : INT [FK]
+    * sk_veiculo : INT [FK]
+    * sk_destino : INT [FK]
+    codigo_rota_dd : VARCHAR(20) [DD]
+    --
+    * peso_liquido_ton : DECIMAL(8,3)
+    * custo_destinacao_reais : DECIMAL(10,2)
+    * tempo_descarregamento_minutos : INT
+    * distancia_km : DECIMAL(6,2)
+    * emissoes_estimadas_co2_kg : DECIMAL(8,2)
+}
+
+entity "Fato_Ocorrencias_Descarte" as Fato_Ocorrencias <<Fact>> {
+    * **sk_fato_ocorrencia** : BIGINT [PK]
+    --
+    * sk_tempo_abertura : INT [FK]
+    sk_tempo_atendimento : INT [FK]
+    * sk_bairro : INT [FK]
+    sk_veiculo_atendimento : INT [FK]
+    * sk_severidade : INT [FK]
+    protocolo_cidadao_dd : VARCHAR(30) [DD]
+    status_chamado_dd : VARCHAR(30) [DD]
+    --
+    * tempo_resolucao_horas : DECIMAL(6,1)
+    * volume_estimado_m3 : DECIMAL(6,2)
+    * custo_remocao_reais : DECIMAL(10,2)
+}
+
+' ============================================================================
+' RELACIONAMENTOS ESTRELA (STAR SCHEMA & CONSTELAÇÃO)
+' ============================================================================
+
+Dim_Tempo ||--o{ Fato_Coleta : "data pesagem"
+Dim_Bairro ||--o{ Fato_Coleta : "localizacao"
+Dim_Tipo_Residuo ||--o{ Fato_Coleta : "classificacao"
+Dim_Veiculo ||--o{ Fato_Coleta : "transporte"
+Dim_Destino ||--o{ Fato_Coleta : "instalacao"
+
+Dim_Tempo ||--o{ Fato_Ocorrencias : "data abertura"
+Dim_Tempo ||--o{ Fato_Ocorrencias : "data atendimento"
+Dim_Bairro ||--o{ Fato_Ocorrencias : "localizacao chamado"
+Dim_Veiculo ||--o{ Fato_Ocorrencias : "atendimento chamado"
+Dim_Severidade ||--o{ Fato_Ocorrencias : "classificacao risco"
+
+@enduml
