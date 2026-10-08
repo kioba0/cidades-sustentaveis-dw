@@ -30,7 +30,7 @@ O projeto aplica a metodologia ativa **Problem-Based Learning (PBL)**, conectand
 | **2** | **[Modelagem OLTP](diagramas/modelo_oltp.png)** | Mínimo de 6 entidades (entregues 8) em modelo relacional normalizado | 🟢 Concluído (1,0 pt) |
 | **3** | **[Modelagem OLAP](diagramas/modelo_olap.png)** | Modelo dimensional (Star Schema / Constelação com 2 Fatos e 6 Dimensões) | 🟢 Concluído (1,0 pt) |
 | **4** | **[Dicionário de Dados](docs/02_dicionario_dados.md)** | Documentação exaustiva de atributos, tipos, chaves e restrições | 🟢 Concluído (1,0 pt) |
-| **5** | **Script de Construção** | Scripts SQL completos para criação dos ambientes OLTP e OLAP | 🟡 Em Planejamento |
+| **5** | **[Script de Construção](sql/)** | Scripts SQL completos para criação e carga dos ambientes OLTP e OLAP | 🟢 Concluído (1,0 pt) |
 | **6** | **Análise Exploratória (AED)** | Mineração de dados aplicada à resolução do problema municipal | ⚪ Não Iniciado |
 | **7** | **Dashboard Operacional** | Mínimo de 5 consultas SQL (enunciado + código) de nível operacional | ⚪ Não Iniciado |
 | **8** | **Dashboard Tático** | Mínimo de 5 consultas SQL (enunciado + código) de nível tático | ⚪ Não Iniciado |

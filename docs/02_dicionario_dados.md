@@ -232,7 +232,7 @@
 | `id_destino_origem` | `INT` | Não | **NK/UQ**| `destinos.id_destino`| Chave Natural da instalação receptora. |
 | `nome_instalacao` | `VARCHAR(120)` | Não | - | Nome oficial | Razão social ou denominação da usina/aterro. |
 | `tipo_instalacao` | `VARCHAR(60)` | Não | - | Categoria | Aterro Metropolitano, Centro de Triagem, Usina. |
-| `bandeira_sustentavel`| `VARCHAR(20)` | Não | Índice | Flag ODS 11.6 | 'Sustentavel (Reciclagem)' vs 'Convencional (Aterro)'. |
+| `bandeira_sustentavel`| `VARCHAR(50)` | Não | Índice | Flag ODS 11.6 | 'Sustentavel (Reciclagem)' vs 'Convencional (Aterro)'. |
 
 ---
 
