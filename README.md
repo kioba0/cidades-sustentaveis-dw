@@ -53,6 +53,7 @@ O projeto aplica a metodologia ativa **Problem-Based Learning (PBL)**, conectand
 ```
 lab_dados/
 ├── README.md                      # Documentação central do projeto (este arquivo)
+├── PLANEJAMENTO.md                # Planejamento estratégico, arquitetura e sprints
 ├── .gitignore                     # Filtros para artefatos gerados, caches e segredos
 │
 ├── materiais/                     # Materiais de referência e enunciados do docente
