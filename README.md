@@ -27,7 +27,7 @@ O projeto aplica a metodologia ativa **Problem-Based Learning (PBL)**, conectand
 | Item | Entregável | Descrição | Status |
 |:---:|---|---|:---:|
 | **1** | **[Contextualização](docs/01_contextualizacao.md)** | Texto com requisitos, problematização e justificativa da ODS 11 | 🟢 Concluído (1,0 pt) |
-| **2** | **Modelagem OLTP** | Mínimo de 6 entidades em modelo relacional normalizado | 🟡 Em Planejamento |
+| **2** | **[Modelagem OLTP](diagramas/modelo_oltp.png)** | Mínimo de 6 entidades (entregues 8) em modelo relacional normalizado | 🟢 Concluído (1,0 pt) |
 | **3** | **Modelagem OLAP** | Modelo dimensional (Star Schema / Constelação) | 🟡 Em Planejamento |
 | **4** | **Dicionário de Dados** | Documentação exaustiva de atributos, tipos, chaves e restrições | 🟡 Em Planejamento |
 | **5** | **Script de Construção** | Scripts SQL completos para criação dos ambientes OLTP e OLAP | 🟡 Em Planejamento |

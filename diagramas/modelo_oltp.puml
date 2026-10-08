@@ -1,0 +1,134 @@
+@startuml modelo_oltp
+!theme plain
+skinparam roundcorner 8
+skinparam shadowing false
+skinparam handwritten false
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 50
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    ArrowColor #2563EB
+    BorderColor #64748B
+    FontColor #0F172A
+    FontSize 12
+    HeaderBackgroundColor #F1F5F9
+}
+
+entity "bairros" as bairros {
+    * **id_bairro** : INT [PK]
+    --
+    * nome_bairro : VARCHAR(100) [UQ]
+    * regiao_administrativa : VARCHAR(80)
+    * populacao_estimada : INT
+    * area_km2 : DECIMAL(6,2)
+    renda_media_domiciliar : DECIMAL(10,2)
+}
+
+entity "pontos_coleta" as pontos_coleta {
+    * **id_ponto** : INT [PK]
+    --
+    * id_bairro : INT [FK]
+    * nome_identificador : VARCHAR(120)
+    * tipo_ponto : ENUM
+    * logradouro : VARCHAR(200)
+    * capacidade_m3 : DECIMAL(6,2)
+    * data_instalacao : DATE
+    * status_operacional : ENUM
+}
+
+entity "veiculos_frota" as veiculos_frota {
+    * **id_veiculo** : INT [PK]
+    --
+    * placa : VARCHAR(10) [UQ]
+    * modelo : VARCHAR(80)
+    * tipo_veiculo : ENUM
+    * capacidade_carga_ton : DECIMAL(5,2)
+    * empresa_operadora : VARCHAR(100)
+    * emissao_co2_km_g : DECIMAL(6,2)
+    * ano_fabricacao : YEAR
+    * status : ENUM
+}
+
+entity "rotas_coleta" as rotas_coleta {
+    * **id_rota** : INT [PK]
+    --
+    * codigo_rota : VARCHAR(20) [UQ]
+    * id_bairro_origem : INT [FK]
+    * id_bairro_destino : INT [FK]
+    * turno : ENUM
+    * tipo_coleta : ENUM
+    * frequencia_semanal : INT
+    * extensao_estimada_km : DECIMAL(6,2)
+}
+
+entity "cooperativas_reciclagem" as cooperativas_reciclagem {
+    * **id_cooperativa** : INT [PK]
+    --
+    * id_bairro : INT [FK]
+    * nome_cooperativa : VARCHAR(150) [UQ]
+    * cnpj : VARCHAR(18) [UQ]
+    * capacidade_triagem_ton_dia : DECIMAL(5,2)
+    * qtd_catadores_associados : INT
+    * materiais_aceitos : VARCHAR(200)
+    * data_convenio : DATE
+}
+
+entity "destinos_finais" as destinos_finais {
+    * **id_destino** : INT [PK]
+    --
+    * nome_instalacao : VARCHAR(120) [UQ]
+    * tipo_instalacao : ENUM
+    * bairro_localizacao : VARCHAR(100)
+    * custo_tonelada_reais : DECIMAL(8,2)
+    * capacidade_maxima_ton_mes : DECIMAL(10,2)
+    * licenca_ambiental : VARCHAR(50) [UQ]
+}
+
+entity "pesagens_coleta" as pesagens_coleta {
+    * **id_pesagem** : BIGINT [PK]
+    --
+    * id_veiculo : INT [FK]
+    * id_rota : INT [FK]
+    * id_destino : INT [FK]
+    * data_hora_pesagem : DATETIME
+    * peso_bruto_kg : DECIMAL(9,2)
+    * tara_kg : DECIMAL(9,2)
+    * peso_liquido_kg : DECIMAL(9,2) [COMPUTED]
+    * tipo_residuo : ENUM
+    * km_odometro : DECIMAL(9,2)
+    * tempo_descarregamento_minutos : INT
+}
+
+entity "chamados_descarte_irregular" as chamados_descarte_irregular {
+    * **id_chamado** : BIGINT [PK]
+    --
+    * protocolo_cidadao : VARCHAR(30) [UQ]
+    * id_bairro : INT [FK]
+    id_ponto_coleta : INT [FK]
+    * data_abertura : DATETIME
+    data_atendimento : DATETIME
+    * descricao_ocorrencia : TEXT
+    * volume_estimado_m3 : DECIMAL(6,2)
+    * severidade_risco : ENUM
+    * status : ENUM
+    id_veiculo_atendimento : INT [FK]
+}
+
+' Relacionamentos e Cardinalidades
+bairros ||--o{ pontos_coleta : "possui"
+bairros ||--o{ rotas_coleta : "origina"
+bairros ||--o{ rotas_coleta : "destina"
+bairros ||--o{ cooperativas_reciclagem : "sedia"
+bairros ||--o{ chamados_descarte_irregular : "registra"
+
+pontos_coleta ||--o{ chamados_descarte_irregular : "referencia (opcional)"
+
+veiculos_frota ||--o{ pesagens_coleta : "transporta"
+veiculos_frota ||--o{ chamados_descarte_irregular : "atende"
+
+rotas_coleta ||--o{ pesagens_coleta : "executa"
+destinos_finais ||--o{ pesagens_coleta : "recebe"
+
+@enduml
