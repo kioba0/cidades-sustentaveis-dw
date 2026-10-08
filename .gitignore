@@ -1,0 +1,35 @@
+# Arquivos temporários de editores e SO
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Saídas e backups de Banco de Dados
+*.dump
+*.bak
+*.sql.gz
+
+# Python & Notebooks (para AED/Mineração)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.ipynb_checkpoints/
+
+# Docker volumes / metabase local
+metabase-data/
+*.db
+*.log
+
+# Credenciais e segredos
+*.env
+.env
+credentials.txt
