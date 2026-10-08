@@ -63,7 +63,7 @@ BEGIN
 END$$
 DELIMITER ;
 
-CALL sp_gerar_dim_tempo('2024-01-01', '2026-12-31');
+CALL sp_gerar_dim_tempo('2023-01-01', '2026-12-31');
 DROP PROCEDURE IF EXISTS sp_gerar_dim_tempo;
 
 -- ----------------------------------------------------------------------------
