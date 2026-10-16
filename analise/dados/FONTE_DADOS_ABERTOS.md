@@ -65,3 +65,14 @@ Para municiar o Data Warehouse e o algoritmo de Mineração de Dados (K-Means) c
 5. **Carga e Idempotência:**
    * Geração automática das instruções `INSERT` em `sql/02_oltp_seed.sql` e `docker/init/02_oltp_seed.sql`.
    * Propagação automática para o Data Warehouse (`dw_ecocidade.fato_ocorrencias_descarte`) pelo pipeline `sql/04_etl_pipeline.sql`.
+
+---
+
+## 5. Dataset Consolidado para Mineração de Dados & K-Means (Item 6)
+
+Para a execução da **Mineração de Dados e Análise Exploratória (Item 6 do Barema)**, todos os **11.622 registros** filtrados de resíduos sólidos foram estruturados no arquivo:
+* **Arquivo:** [`lab_dados/analise/dados/salvador_156_limpeza_urbana_2024.csv`](file:///home/kioba/Documents/Faculdade/9_SEMESTRE/Bancos/lab_dados/analise/dados/salvador_156_limpeza_urbana_2024.csv)
+* **Gerador:** [`lab_dados/analise/gerar_dataset_salvador.py`](file:///home/kioba/Documents/Faculdade/9_SEMESTRE/Bancos/lab_dados/analise/gerar_dataset_salvador.py)
+* **Dimensões:** 11.622 linhas x 15 colunas.
+* **Variáveis para Agrupamento:** Volume acumulado ($m^3$), SLA médio de atendimento por Prefeitura-Bairro, densidade de chamados por 1.000 habitantes, proporção de descarte em encostas vs coleta seletiva e renda média domiciliar.
+

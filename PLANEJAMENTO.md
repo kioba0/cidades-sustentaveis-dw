@@ -186,7 +186,7 @@ flowchart TD
 ### Sprint 2: Implementação da Entrega Final (06/11/2026 — 40% da Nota) — 🟡 PRONTO PARA INICIAR
 *Ponto de Partida para a Próxima Sessão:*
 * [ ] **Item 6 (Próximo Passo Imediato):** Análise Exploratória e Mineração de Dados (K-Means).
-  * *Dataset Real já preparado em:* `analise/dados/emlurb_156_limpeza_urbana_2024.csv` (108.083 registros).
+  * *Dataset Real Consolidado:* [`analise/dados/salvador_156_limpeza_urbana_2024.csv`](file:///home/kioba/Documents/Faculdade/9_SEMESTRE/Bancos/lab_dados/analise/dados/salvador_156_limpeza_urbana_2024.csv) (11.622 registros calibrados com bairros e SLA real).
   * *Entregável:* Documento analítico `docs/03_mineracao_dados_aed.md` e script/notebook Python com Elbow Method, Silhouette e Radar dos 3 clusters municipais.
 * [ ] **Item 7:** Dashboard Operacional (5 consultas SQL em `sql/05_consultas_operacional.sql`).
 * [ ] **Item 8:** Dashboard Tático (5 consultas SQL em `sql/06_consultas_tatico.sql`).
