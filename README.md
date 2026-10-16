@@ -31,7 +31,7 @@ O projeto aplica a metodologia ativa **Problem-Based Learning (PBL)**, conectand
 | **3** | **[Modelagem OLAP](diagramas/modelo_olap.png)** | Modelo dimensional (Star Schema / Constelação com 2 Fatos e 6 Dimensões) | 🟢 Concluído (1,0 pt) |
 | **4** | **[Dicionário de Dados](docs/02_dicionario_dados.md)** | Documentação exaustiva de atributos, tipos, chaves e restrições | 🟢 Concluído (1,0 pt) |
 | **5** | **[Script de Construção](sql/)** | Scripts SQL completos para criação e carga dos ambientes OLTP e OLAP | 🟢 Concluído (1,0 pt) |
-| **6** | **Análise Exploratória (AED)** | Mineração de dados aplicada à resolução do problema municipal | ⚪ Não Iniciado |
+| **6** | **Análise Exploratória (AED)** | Mineração K-Means para segmentação de bairros (dataset consolidado de 11.622 casos pronto) | ⚪ Não Iniciado |
 | **7** | **Dashboard Operacional** | Mínimo de 5 consultas SQL (enunciado + código) de nível operacional | ⚪ Não Iniciado |
 | **8** | **Dashboard Tático** | Mínimo de 5 consultas SQL (enunciado + código) de nível tático | ⚪ Não Iniciado |
 | **9** | **Dashboard Estratégico** | Mínimo de 5 consultas SQL (enunciado + código) de nível estratégico | ⚪ Não Iniciado |
@@ -63,26 +63,37 @@ lab_dados/
 │   └── fluxo_pbl_artigo.png       # Fluxo metodológico PBL (Cordeiro et al., 2018)
 │
 ├── docs/                          # Documentações analíticas e conceituais
-│   ├── 01_contextualizacao.md     # Problematização, requisitos e vínculos ODS (Item 1)
+│   ├── 01_contextualizacao.md     # Problematização, requisitos, calibração empírica e ODS (Item 1)
 │   ├── 02_dicionario_dados.md     # Dicionário de dados OLTP e OLAP (Item 4)
 │   ├── 03_mineracao_dados_aed.md  # Análise Exploratória e Mineração de Dados (Item 6)
 │   └── 04_plano_acao_5w2h.md      # Plano de Ação 5W2H (Item 10)
 │
 ├── diagramas/                     # Modelagens conceituais e lógicas
 │   ├── modelo_oltp.puml           # Diagrama relacional OLTP (Item 2)
-│   └── modelo_olap.puml           # Diagrama dimensional Star Schema (Item 3)
+│   ├── modelo_oltp.png            # Renderização visual do modelo transacional
+│   ├── modelo_olap.puml           # Diagrama dimensional Star Schema (Item 3)
+│   └── modelo_olap.png            # Renderização visual da Constelação de Fatos
+│
+├── analise/                       # Engenharia de dados, datasets e mineração K-Means
+│   ├── dados/
+│   │   ├── emlurb_156_limpeza_urbana_2024.csv    # Base empírica bruta de 108.083 chamados (Recife)
+│   │   ├── salvador_156_limpeza_urbana_2024.csv  # Dataset consolidado de 11.622 casos de Salvador
+│   │   └── FONTE_DADOS_ABERTOS.md                # Metodologia de calibração empírica e linhagem
+│   ├── ingestar_dados_reais.py                   # Amostragem estratificada e carga no Seed SQL (1.000 chamados)
+│   └── gerar_dataset_salvador.py                 # Pipeline de geração do dataset de Salvador para o K-Means
 │
 ├── sql/                           # Scripts SQL executáveis
 │   ├── 01_oltp_schema.sql         # DDL do banco operacional (Item 5)
-│   ├── 02_oltp_seed.sql           # Carga de dados operacionais
+│   ├── 02_oltp_seed.sql           # Carga operacional calibrada para Salvador (Item 5)
 │   ├── 03_dw_schema.sql           # DDL do Data Warehouse (Item 5)
-│   ├── 04_etl_pipeline.sql        # Procedimentos de ETL e transformação
+│   ├── 04_etl_pipeline.sql        # Procedimentos de ETL e transformação (Item 5)
 │   ├── 05_consultas_operacional.sql # 5 Consultas operacionais (Item 7)
 │   ├── 06_consultas_tatico.sql     # 5 Consultas táticas (Item 8)
 │   └── 07_consultas_estrategico.sql# 5 Consultas estratégicas (Item 9)
 │
 └── docker/                        # Orquestração do ambiente de execução (Zero-Touch)
     ├── docker-compose.yml         # MySQL 8.0 + Metabase BI
+    ├── README.md                  # Guia de inicialização e validação
     └── init/                      # Cargas automatizadas de inicialização
 ```
 

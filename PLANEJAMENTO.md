@@ -42,6 +42,13 @@ O desenvolvimento segue estritamente as 8 etapas do método: da análise das dor
 > Para superar com folga o mínimo exigido de 6 tabelas, modelaremos 8 entidades normalizadas que cobrem a cadeia de ponta a ponta:
 > `bairros`, `pontos_coleta`, `veiculos_frota`, `rotas_coleta`, `cooperativas_reciclagem`, `destinos_finais`, `pesagens_coleta` e `chamados_descarte_irregular`.
 
+> [!IMPORTANT]
+> **Decisão 4 — Calibração Empírica por Cidade-Espelho (Regionalização para Salvador - BA):**  
+> Diante da ausência de microdados públicos em CSV com SLA individual na Limpurb/Salvador, adotou-se a metodologia de transferência empírica: extraiu-se a dinâmica temporal real (sazonalidade, tempos de atendimento/SLA e volumetria) da base oficial de 108.083 chamados da EMLURB (156) e projetou-se integralmente sobre a malha territorial soteropolitana.  
+> *Resultados Práticos:*
+> 1. Dataset analítico consolidado [`analise/dados/salvador_156_limpeza_urbana_2024.csv`](file:///home/kioba/Documents/Faculdade/9_SEMESTRE/Bancos/lab_dados/analise/dados/salvador_156_limpeza_urbana_2024.csv) com **11.622 casos reais de Salvador** pronto para a clusterização K-Means (Item 6).
+> 2. Amostra estratificada de **1.000 chamados soteropolitanos** (`SSA-156-2024-XXXXX`) populada no seed SQL do MySQL/Docker (`sql/02_oltp_seed.sql`).
+
 ---
 
 ## 📐 Arquitetura do Banco de Dados

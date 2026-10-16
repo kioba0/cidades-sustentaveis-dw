@@ -16,7 +16,7 @@ docker compose up -d
 
 ### Ordem de Execução Automática (`docker/init/`):
 1. `01_oltp_schema.sql`: DDL das 8 tabelas transacionais do OLTP.
-2. `02_oltp_seed.sql`: Carga com 16 bairros de Salvador, rotas, veículos, cooperativas, 1.624 pesagens e 250 chamados.
+2. `02_oltp_seed.sql`: Carga com 16 bairros de Salvador, rotas, veículos, cooperativas, 1.624 pesagens e 1.000 chamados do Fala Salvador 156.
 3. `03_dw_schema.sql`: DDL das 6 dimensões conformadas e 2 tabelas de fatos do DW.
 4. `04_etl_pipeline.sql`: Pipeline de ETL que extrai, transforma e carrega o DW.
 
