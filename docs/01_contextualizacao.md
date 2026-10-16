@@ -41,6 +41,14 @@ Em diversas comunidades e vias secundárias, a ausência de infraestrutura próx
 ### 2.4 Ineficiência Logística e Pegada de Carbono da Frota
 A frota de caminhões compactadores e caçambas opera muitas vezes em rotas históricas pré-fixadas, desprovidas de telemetria e balanceamento dinâmico. Caminhões retornam às centrais de pesagem com carga incompleta ou realizam trajetos ociosos, elevando o consumo de óleo diesel e aumentando as emissões fugitivas de dióxido de carbono ($CO_2$) e material particulado na atmosfera urbana.
 
+### 2.5 Metodologia de Dados & Calibração Empírica por Cidade-Espelho (Proxy Urbano)
+Para validar o modelo relacional e multidimensional com volumetria maciça e dinâmica operacional realista, o projeto depara-se com um desafio clássico de cidades inteligentes: embora a Prefeitura Municipal de Salvador disponha dos canais de ouvidoria (*Fala Salvador 156*) e da Limpurb, os portais de transparência locais não disponibilizam microdados tabulares (CSV/API) de chamados individuais com carimbos de tempo de abertura, resolução e SLA.
+
+Para superar essa limitação sem recorrer a simulações puramente artificiais, adotou-se a metodologia científica de **Calibração Empírica por Cidade-Espelho (*Grounded Synthetic Proxy*)**:
+1. **Base Empírica de Treinamento:** Utilizou-se o dataset histórico oficial da central 156 da **EMLURB (Recife - PE)**, reconhecida nacionalmente pela excelência e abertura de dados de zeladoria urbana, contendo **108.083 registros reais** com datas precisas de solicitação e encerramento.
+2. **Transferência de Padrões Operacionais:** As curvas de sazonalidade temporal, tempos reais de atendimento (SLA), distribuição horária e tipos de demanda (entulho, coleta domiciliar, coleta seletiva) foram extraídas da base empírica e **projetadas com exatidão sobre a malha de 16 bairros e logradouros reais de Salvador**.
+3. **Regionalização dos Protocolos:** Cada registro foi estruturado com protocolo municipal soteropolitano (`SSA-156-2024-XXXXX`), vinculado às Prefeituras-Bairro e calibrado com os fatores de risco geológico das encostas da capital baiana (Liberdade, São Caetano, Subúrbio e Cajazeiras).
+
 ---
 
 ## 3. Justificativa e Alinhamento com a Agenda 2030 da ONU (ODS)
