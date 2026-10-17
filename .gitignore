@@ -24,10 +24,13 @@ venv/
 ENV/
 .ipynb_checkpoints/
 
-# Docker volumes / metabase local
-metabase-data/
-*.db
+# Docker volumes / logs
 *.log
+*.trace.db
+
+# O banco do Metabase é versionado para persistência de dashboards em equipe
+!docker/metabase-data/
+!docker/metabase-data/**
 
 # Credenciais e segredos
 *.env
