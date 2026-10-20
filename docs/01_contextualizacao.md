@@ -126,7 +126,7 @@ A operacionalização prática do fluxo ocorre da seguinte forma:
             │
 [Etapa IV: Pontos de Aprendizagem] ──> Aprofundamento em Star Schema, ETL robusto e K-Means
             │
-[Etapa V: Planejamento em Grupo] ──> Sprints no PLANEJAMENTO.md e cards no Notion Calendar
+[Etapa V: Planejamento em Grupo] ──> Divisão de Sprints de Engenharia e cronograma integrado
             │
 [Etapa VI: Aplicação dos Conhecimentos] ──> Construção do OLTP, scripts SQL, DW e consultas
             │

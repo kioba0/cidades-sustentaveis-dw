@@ -36,3 +36,7 @@ ENV/
 *.env
 .env
 credentials.txt
+
+# Documentos internos e contexto para IA
+PLANEJAMENTO.md
+
