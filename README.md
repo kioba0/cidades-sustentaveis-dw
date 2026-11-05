@@ -32,7 +32,7 @@ O projeto aplica a metodologia ativa **Problem-Based Learning (PBL)**, conectand
 | **4** | **[Dicionário de Dados](docs/02_dicionario_dados.md)** | Documentação exaustiva de atributos, tipos, chaves e restrições | 🟢 Concluído (1,0 pt) |
 | **5** | **[Script de Construção](sql/)** | Scripts SQL completos para criação e carga dos ambientes OLTP e OLAP | 🟢 Concluído (1,0 pt) |
 | **6** | **[Análise Exploratória (AED)](docs/03_mineracao_dados_aed.md)** | Mineração K-Means para segmentação dos 16 bairros em 3 clusters operacionais | 🟢 Concluído (1,0 pt) |
-| **7** | **Dashboard Operacional** | Mínimo de 5 consultas SQL (enunciado + código) de nível operacional | ⚪ Não Iniciado |
+| **7** | **[Dashboard Operacional](sql/05_consultas_operacional.sql)** | Mínimo de 5 consultas SQL (enunciado + código) de nível operacional | 🟢 Concluído (1,0 pt) |
 | **8** | **Dashboard Tático** | Mínimo de 5 consultas SQL (enunciado + código) de nível tático | ⚪ Não Iniciado |
 | **9** | **Dashboard Estratégico** | Mínimo de 5 consultas SQL (enunciado + código) de nível estratégico | ⚪ Não Iniciado |
 | **10** | **Plano de Ação (5W2H)** | Plano de ação orientado por dados para suporte à gestão | ⚪ Não Iniciado |
