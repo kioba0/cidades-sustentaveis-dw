@@ -102,11 +102,6 @@ def get_existing_cards(token):
 
 
 def create_or_get_card(name, sql_query, db_id, display_type, token, existing_cards, viz_settings=None):
-    if name in existing_cards:
-        card_id = existing_cards[name]
-        print(f"   ♻️ Reutilizando card pré-existente: [{card_id}] {name}")
-        return card_id
-
     if viz_settings is None:
         viz_settings = {}
 
@@ -122,6 +117,15 @@ def create_or_get_card(name, sql_query, db_id, display_type, token, existing_car
         "display": display_type,
         "visualization_settings": viz_settings
     }
+
+    if name in existing_cards:
+        card_id = existing_cards[name]
+        try:
+            make_request(f"/api/card/{card_id}", card_payload, method="PUT", session_token=token)
+            print(f"   ♻️ Card atualizado: [{card_id}] {name} ({display_type})")
+        except Exception as e:
+            print(f"   ⚠️ Não foi possível atualizar card {card_id}: {e}")
+        return card_id
 
     res = make_request("/api/card", card_payload, session_token=token)
     card_id = res.get("id")
@@ -175,6 +179,85 @@ def main():
     # =========================================================================
     # DEFINIÇÃO DOS CARDS E QUERIES
     # =========================================================================
+
+    # --- SCORECARDS OPERACIONAIS (OLTP - PULSO DE 5 SEGUNDOS) ---
+    q_kpi_o1 = "SELECT COUNT(*) AS caminhoes_ativos FROM veiculos_frota WHERE status = 'Operacional';"
+    q_kpi_o2 = "SELECT ROUND(AVG(tempo_descarregamento_minutos), 1) AS tempo_medio_balanca_min FROM pesagens_coleta;"
+    q_kpi_o3 = "SELECT COUNT(*) AS chamados_encostas_criticos FROM chamados_descarte_irregular WHERE severidade_risco = 'Critico / Risco Encosta ou Alagamento' AND status IN ('Aberto', 'Em Andamento');"
+    q_kpi_o4 = """
+SELECT COUNT(*) AS ecopontos_em_alerta
+FROM (
+    SELECT pc.id_ponto, pc.capacidade_m3, COALESCE(SUM(c.volume_estimado_m3), 0) AS vol
+    FROM pontos_coleta pc
+    LEFT JOIN chamados_descarte_irregular c
+        ON (c.id_ponto_coleta = pc.id_ponto OR (c.id_ponto_coleta IS NULL AND c.id_bairro = pc.id_bairro))
+        AND c.status IN ('Aberto', 'Em Andamento')
+    WHERE pc.status_operacional = 'Ativo'
+    GROUP BY pc.id_ponto, pc.capacidade_m3
+    HAVING vol >= (pc.capacidade_m3 * 0.70)
+) sub;
+"""
+
+    # --- SCORECARDS TÁTICOS (OLAP - DW) ---
+    q_kpi_t1 = "SELECT ROUND(SUM(custo_destinacao_reais) / SUM(peso_liquido_ton), 2) AS custo_medio_por_ton_reais FROM fato_coleta_residuos;"
+    q_kpi_t2 = """
+SELECT ROUND(SUM(f.peso_liquido_ton * 95.50) - SUM(f.custo_destinacao_reais), 2) AS economia_liquida_cooperativas_reais
+FROM fato_coleta_residuos f
+INNER JOIN dim_destino d ON f.sk_destino = d.sk_destino
+WHERE d.tipo_instalacao = 'Centro de Triagem Cooperativa';
+"""
+    q_kpi_t3 = """
+SELECT ROUND(AVG(fo.tempo_resolucao_horas), 1) AS sla_medio_cluster_critico_horas
+FROM fato_ocorrencias_descarte fo
+INNER JOIN dim_bairro b ON fo.sk_bairro = b.sk_bairro
+WHERE b.regiao_administrativa IN ('Liberdade/Sao Caetano', 'Suburbio Ferroviario');
+"""
+
+    # --- SCORECARDS ESTRATÉGICOS (OLAP - DW) ---
+    q_kpi_e1 = """
+SELECT ROUND((SUM(CASE WHEN d.bandeira_sustentavel != 'Convencional (Aterro)' THEN f.peso_liquido_ton ELSE 0 END) / SUM(f.peso_liquido_ton)) * 100, 1) AS taxa_desvio_atual_pct
+FROM fato_coleta_residuos f
+INNER JOIN dim_destino d ON f.sk_destino = d.sk_destino
+INNER JOIN dim_tempo t ON f.sk_tempo = t.sk_tempo
+WHERE t.ano = 2025;
+"""
+    q_kpi_e2 = """
+SELECT ROUND(SUM(f.peso_liquido_ton * r.fator_emissao_ch4 * 28.0), 0) AS carbono_co2e_evitado_2025_ton
+FROM fato_coleta_residuos f
+INNER JOIN dim_tipo_residuo r ON f.sk_tipo_residuo = r.sk_tipo_residuo
+INNER JOIN dim_destino d ON f.sk_destino = d.sk_destino
+INNER JOIN dim_tempo t ON f.sk_tempo = t.sk_tempo
+WHERE d.bandeira_sustentavel != 'Convencional (Aterro)' AND t.ano = 2025;
+"""
+    q_kpi_e3 = "SELECT 13.5 AS anos_ganho_sobrevida_5w2h;"
+
+    # --- GRÁFICOS COMPLEMENTARES DE STORYTELLING ---
+    q_c8_scatter = """
+SELECT
+    b.nome_bairro,
+    ROUND((SUM(CASE WHEN s.impacto_risco_geologico = 'Sim' THEN 1 ELSE 0 END) / COUNT(fo.sk_fato_ocorrencia)) * 100, 1) AS pct_risco_encosta,
+    ROUND(AVG(fo.tempo_resolucao_horas), 1) AS sla_medio_horas,
+    CASE
+        WHEN b.regiao_administrativa IN ('Liberdade/Sao Caetano', 'Suburbio Ferroviario') THEN '🔴 Cluster 1: Crítico'
+        WHEN b.regiao_administrativa = 'Barra/Pituba' THEN '🟢 Cluster 3: Seletivo'
+        ELSE '🔵 Cluster 2: Regular'
+    END AS cluster_kmeans
+FROM fato_ocorrencias_descarte fo
+INNER JOIN dim_bairro b ON fo.sk_bairro = b.sk_bairro
+INNER JOIN dim_severidade s ON fo.sk_severidade = s.sk_severidade
+GROUP BY b.nome_bairro, b.regiao_administrativa
+ORDER BY pct_risco_encosta DESC;
+"""
+
+    q_c11_pie = """
+SELECT
+    r.categoria_macro AS tipo_residuo,
+    ROUND(SUM(f.peso_liquido_ton), 1) AS volume_ton
+FROM fato_coleta_residuos f
+INNER JOIN dim_tipo_residuo r ON f.sk_tipo_residuo = r.sk_tipo_residuo
+GROUP BY r.categoria_macro
+ORDER BY volume_ton DESC;
+"""
 
     # --- CONSULTAS OPERACIONAIS (OLTP) ---
     q_c1 = """
@@ -488,6 +571,11 @@ FROM taxa_historica th;
     # CRIAÇÃO DAS QUESTÕES (CARDS)
     # =========================================================================
     print("\n📦 Criando Cards do Dashboard Operacional (ecocidade_oltp)...")
+    id_kpi_o1 = create_or_get_card("KPI O1: Caminhões Operacionais em Trânsito", q_kpi_o1, oltp_id, "scalar", token, existing_cards)
+    id_kpi_o2 = create_or_get_card("KPI O2: Tempo Médio de Balança (min)", q_kpi_o2, oltp_id, "scalar", token, existing_cards)
+    id_kpi_o3 = create_or_get_card("KPI O3: Chamados em Risco de Encosta (Abertos)", q_kpi_o3, oltp_id, "scalar", token, existing_cards)
+    id_kpi_o4 = create_or_get_card("KPI O4: Ecopontos em Alerta (>70% Lotação)", q_kpi_o4, oltp_id, "scalar", token, existing_cards)
+
     id_c1 = create_or_get_card("C1: Controle de Balança & Descarregamento em Tempo Real", q_c1, oltp_id, "table", token, existing_cards)
     id_c2 = create_or_get_card("C2: Pressão de Lotação em Ecopontos e PEVs", q_c2, oltp_id, "bar", token, existing_cards, {"graph.dimensions": ["local_ponto_coleta"], "graph.metrics": ["taxa_pressao_capacidade_pct"]})
     id_c3 = create_or_get_card("C3: Fila de Despacho 156 em Encostas Críticas (SLA)", q_c3, oltp_id, "table", token, existing_cards)
@@ -495,14 +583,52 @@ FROM taxa_historica th;
     id_c5 = create_or_get_card("C5: Cumprimento de Itinerários & Produtividade de Rotas", q_c5, oltp_id, "bar", token, existing_cards, {"graph.dimensions": ["codigo_rota"], "graph.metrics": ["volume_total_ton"]})
 
     print("\n📦 Criando Cards do Dashboard Tático (dw_ecocidade)...")
+    id_kpi_t1 = create_or_get_card("KPI T1: Custo Médio Ponderado por Tonelada (R$/ton)", q_kpi_t1, dw_id, "scalar", token, existing_cards)
+    id_kpi_t2 = create_or_get_card("KPI T2: Economia Líquida Gerada por Cooperativas (R$)", q_kpi_t2, dw_id, "scalar", token, existing_cards)
+    id_kpi_t3 = create_or_get_card("KPI T3: SLA Médio no Cluster 1 Crítico (Horas)", q_kpi_t3, dw_id, "scalar", token, existing_cards)
+
     id_c6 = create_or_get_card("C6: Custo de Destinação por Prefeitura-Bairro", q_c6, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["prefeitura_bairro"], "graph.metrics": ["custo_total_reais"]})
     id_c7 = create_or_get_card("C7: Ecoeficiência da Frota (kg lixo/km) & Emissões CO₂", q_c7, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["modelo_veiculo"], "graph.metrics": ["produtividade_kg_por_km"]})
     id_c8 = create_or_get_card("C8: Desempenho de SLA 156 por Região & Clusters K-Means", q_c8, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["prefeitura_bairro"], "graph.metrics": ["sla_medio_horas"]})
+    id_c8_scatter = create_or_get_card("C8.1: K-Means Dispersão: Risco Encosta (%) vs SLA (Horas)", q_c8_scatter, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["nome_bairro"], "graph.metrics": ["pct_risco_encosta", "sla_medio_horas"]})
     id_c9 = create_or_get_card("C9: Triagem em Cooperativas & Economia de Custo Evitado", q_c9, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["ano", "cooperativa_destino"], "graph.metrics": ["economia_liquida_custo_evitado_reais"]})
     id_c10 = create_or_get_card("C10: Auditoria Tática de Concessionárias de Coleta", q_c10, dw_id, "table", token, existing_cards)
 
     print("\n📦 Criando Cards do Dashboard Estratégico (dw_ecocidade)...")
-    id_c11 = create_or_get_card("C11: Taxa Anual de Desvio de Aterro Sanitário (ODS 12.5)", q_c11, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["ano"], "graph.metrics": ["taxa_desvio_aterro_pct"]})
+    id_kpi_e1 = create_or_get_card("KPI E1: Taxa Atual de Desvio do Aterro Sanitário", q_kpi_e1, dw_id, "scalar", token, existing_cards)
+    id_kpi_e2 = create_or_get_card("KPI E2: Mitigação Climática em 2025 (ton CO₂e)", q_kpi_e2, dw_id, "scalar", token, existing_cards)
+    id_kpi_e3 = create_or_get_card("KPI E3: Sobrevida Máxima Adicional do Aterro (Meta 5W2H)", q_kpi_e3, dw_id, "scalar", token, existing_cards)
+
+    id_c11 = create_or_get_card(
+        "C11: Taxa Anual de Desvio de Aterro Sanitário (ODS 12.5)",
+        q_c11,
+        dw_id,
+        "line",
+        token,
+        existing_cards,
+        {
+            "graph.dimensions": ["ano"],
+            "graph.metrics": ["taxa_desvio_aterro_pct"],
+            "graph.show_goal": True,
+            "graph.goal_value": 65.0,
+            "graph.goal_label": "Meta ONU ODS 12.5 (65%)",
+            "graph.show_values": True,
+            "graph.x_axis.scale": "ordinal"
+        }
+    )
+    id_c11_pie = create_or_get_card(
+        "C11.1: Composição Gravimétrica dos Resíduos Coletados",
+        q_c11_pie,
+        dw_id,
+        "pie",
+        token,
+        existing_cards,
+        {
+            "pie.dimension": "tipo_residuo",
+            "pie.metric": "volume_ton",
+            "pie.slice_threshold": 0.01
+        }
+    )
     id_c12 = create_or_get_card("C12: Custo Per Capita de Manejo por Classe de Renda", q_c12, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["classe_renda"], "graph.metrics": ["custo_per_capita_ano_reais"]})
     id_c13 = create_or_get_card("C13: Mitigação Climática: Metano e CO₂e Evitados (ODS 13)", q_c13, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["instalacao_desvio"], "graph.metrics": ["carbono_co2e_evitado_ton"]})
     id_c14 = create_or_get_card("C14: Série Plurianual de Descarte em Encostas (ODS 11.6)", q_c14, dw_id, "bar", token, existing_cards, {"graph.dimensions": ["nivel_severidade"], "graph.metrics": ["volume_removido_m3"]})
@@ -512,7 +638,7 @@ FROM taxa_historica th;
     # CRIAÇÃO DOS DASHBOARDS E MONTAGEM DOS GRIDS
     # =========================================================================
 
-    # 1. Dashboard Operacional
+    # 1. Dashboard Operacional (Chão de Fábrica)
     dash1_id = create_dashboard(
         "EcoCidade — 1. Painel Operacional (Chão de Fábrica)",
         "Monitoramento em tempo real de pesagens na balança, saturação de Ecopontos e fila crítica do Fala Salvador 156.",
@@ -520,41 +646,66 @@ FROM taxa_historica th;
     )
     layout1 = [
         # (card_id, row, col, size_x, size_y, viz)
-        (id_c1, 0, 0, 24, 7, {}),       # C1 Tabela inteira topo
-        (id_c2, 7, 0, 12, 7, {}),       # C2 Gráfico barras esquerda
-        (id_c4, 7, 12, 12, 7, {}),      # C4 Gráfico barras direita
-        (id_c3, 14, 0, 24, 6, {}),      # C3 Tabela de fila 156 encostas
-        (id_c5, 20, 0, 24, 6, {})       # C5 Produtividade de rotas
+        # Faixa 1: Pulso de 5 Segundos (4 KPIs Big Numbers)
+        (id_kpi_o1, 0, 0, 6, 3, {}),
+        (id_kpi_o2, 0, 6, 6, 3, {}),
+        (id_kpi_o3, 0, 12, 6, 3, {}),
+        (id_kpi_o4, 0, 18, 6, 3, {}),
+        # Faixa 2: Prioridade Crítica de Encostas (C3 - Gestão de Risco e Vidas)
+        (id_c3, 3, 0, 24, 6, {}),
+        # Faixa 3: Controle de Balança em Tempo Real (C1)
+        (id_c1, 9, 0, 24, 6, {}),
+        # Faixa 4: Capacidade de Pontos de Coleta e Lotação de Frota (C2 e C4)
+        (id_c2, 15, 0, 12, 7, {}),
+        (id_c4, 15, 12, 12, 7, {}),
+        # Faixa 5: Produtividade e Extensão de Rotas (C5)
+        (id_c5, 22, 0, 24, 6, {})
     ]
     add_cards_to_dashboard(dash1_id, layout1, token)
 
-    # 2. Dashboard Tático
+    # 2. Dashboard Tático (Frotas, Distritos & Cooperativas)
     dash2_id = create_dashboard(
         "EcoCidade — 2. Painel Tático (Frotas, Distritos & Cooperativas)",
         "Indicadores táticos de custos por distrito, eficiência energética e parcerias com cooperativas de catadores.",
         token
     )
     layout2 = [
-        (id_c6, 0, 0, 12, 7, {}),       # C6 Custo por distrito
-        (id_c7, 0, 12, 12, 7, {}),      # C7 Ecoeficiência kg/km
-        (id_c8, 7, 0, 12, 7, {}),       # C8 SLA e Clusters K-Means
-        (id_c9, 7, 12, 12, 7, {}),      # C9 Economia cooperativas
-        (id_c10, 14, 0, 24, 7, {})      # C10 Auditoria de concessionárias
+        # Faixa 1: KPIs Táticos (3 Big Numbers)
+        (id_kpi_t1, 0, 0, 8, 3, {}),
+        (id_kpi_t2, 0, 8, 8, 3, {}),
+        (id_kpi_t3, 0, 16, 8, 3, {}),
+        # Faixa 2: Custos por Região e Ecoeficiência da Frota (C6 e C7)
+        (id_c6, 3, 0, 12, 7, {}),
+        (id_c7, 3, 12, 12, 7, {}),
+        # Faixa 3: SLA por Região e Dispersão K-Means (C8 e C8.1)
+        (id_c8, 10, 0, 12, 7, {}),
+        (id_c8_scatter, 10, 12, 12, 7, {}),
+        # Faixa 4: Triagem em Cooperativas e Auditoria Concessionárias (C9 e C10)
+        (id_c9, 17, 0, 12, 7, {}),
+        (id_c10, 17, 12, 12, 7, {})
     ]
     add_cards_to_dashboard(dash2_id, layout2, token)
 
-    # 3. Dashboard Estratégico
+    # 3. Dashboard Estratégico (ODS 11, 12, 13 & Vida Útil do Aterro)
     dash3_id = create_dashboard(
         "EcoCidade — 3. Painel Estratégico (ODS 11, 12, 13 & Vida Útil do Aterro)",
         "Painel executivo com metas da ONU, equidade fiscal per capita e simulação preditiva de esgotamento do Aterro Sanitário.",
         token
     )
     layout3 = [
-        (id_c11, 0, 0, 12, 7, {}),      # C11 Taxa de desvio ODS 12.5
-        (id_c12, 0, 12, 12, 7, {}),     # C12 Custo per capita
-        (id_c13, 7, 0, 12, 7, {}),      # C13 Mitigação climática CO2e
-        (id_c15, 7, 12, 12, 7, {}),     # C15 Cenários vida útil aterro
-        (id_c14, 14, 0, 24, 7, {})      # C14 Série histórica descarte encostas
+        # Faixa 1: KPIs Estratégicos (3 Big Numbers)
+        (id_kpi_e1, 0, 0, 8, 3, {}),
+        (id_kpi_e2, 0, 8, 8, 3, {}),
+        (id_kpi_e3, 0, 16, 8, 3, {}),
+        # Faixa 2: Linha com Meta ONU 65% e Composição Gravimétrica (C11 e C11.1)
+        (id_c11, 3, 0, 12, 7, {}),
+        (id_c11_pie, 3, 12, 12, 7, {}),
+        # Faixa 3: Custo Per Capita por Renda e Mitigação Climática CO2e (C12 e C13)
+        (id_c12, 10, 0, 12, 7, {}),
+        (id_c13, 10, 12, 12, 7, {}),
+        # Faixa 4: Cenários de Sobrevida do Aterro e Série Histórica de Encostas (C15 e C14)
+        (id_c15, 17, 0, 12, 7, {}),
+        (id_c14, 17, 12, 12, 7, {})
     ]
     add_cards_to_dashboard(dash3_id, layout3, token)
 

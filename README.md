@@ -112,9 +112,9 @@ O ambiente analítico conta com **3 Dashboards Interativos** construídos no Met
 
 | Nível Decisório | Painel no Metabase | Base Conectada | Foco / Principais Questões |
 |---|---|:---:|---|
-| **Operacional (Chão de Fábrica)** | [Painel Operacional](http://localhost:3000/dashboard/103) | `ecocidade_oltp` | Monitoramento em tempo real de pesagens na balança, capacidade de Ecopontos e fila crítica de SLA do 156 (C1 a C5). |
-| **Tático (Médio Prazo)** | [Painel Tático](http://localhost:3000/dashboard/104) | `dw_ecocidade` | Custos de destinação por Prefeitura-Bairro, ecoeficiência da frota (kg/km), SLA por cluster e parcerias com cooperativas (C6 a C10). |
-| **Estratégico (Longo Prazo / ONU)** | [Painel Estratégico](http://localhost:3000/dashboard/105) | `dw_ecocidade` | Taxa de desvio de aterro (ODS 12.5), equidade de custo per capita, créditos climáticos de CO₂e e sobrevida do Aterro (C11 a C15). |
+| **Operacional (Chão de Fábrica)** | [Painel Operacional](http://localhost:3000/dashboard/106) | `ecocidade_oltp` | 4 Scorecards (Frota, Balança, Fila 156, Ecopontos) + Fila Crítica de Encostas com prioridade máxima + Balança e Produtividade (C1 a C5). |
+| **Tático (Médio Prazo)** | [Painel Tático](http://localhost:3000/dashboard/107) | `dw_ecocidade` | 3 Scorecards (Custo Médio/ton, Economia Cooperativas, SLA Crítico) + Dispersão K-Means (Risco vs SLA) + Custos e Auditoria (C6 a C10). |
+| **Estratégico (Longo Prazo / ONU)** | [Painel Estratégico](http://localhost:3000/dashboard/108) | `dw_ecocidade` | 3 Scorecards (Taxa Desvio, CO₂e Mitigado, Sobrevida) + Linha com Meta ONU 65% + Composição Gravimétrica (Pizza/Donut) e Cenários (C11 a C15). |
 
 ---
 
