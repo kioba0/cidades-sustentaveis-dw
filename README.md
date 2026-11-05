@@ -31,7 +31,7 @@ O projeto aplica a metodologia ativa **Problem-Based Learning (PBL)**, conectand
 | **3** | **[Modelagem OLAP](diagramas/modelo_olap.png)** | Modelo dimensional (Star Schema / Constelação com 2 Fatos e 6 Dimensões) | 🟢 Concluído (1,0 pt) |
 | **4** | **[Dicionário de Dados](docs/02_dicionario_dados.md)** | Documentação exaustiva de atributos, tipos, chaves e restrições | 🟢 Concluído (1,0 pt) |
 | **5** | **[Script de Construção](sql/)** | Scripts SQL completos para criação e carga dos ambientes OLTP e OLAP | 🟢 Concluído (1,0 pt) |
-| **6** | **Análise Exploratória (AED)** | Mineração K-Means para segmentação de bairros (dataset consolidado de 11.622 casos pronto) | ⚪ Não Iniciado |
+| **6** | **[Análise Exploratória (AED)](docs/03_mineracao_dados_aed.md)** | Mineração K-Means para segmentação dos 16 bairros em 3 clusters operacionais | 🟢 Concluído (1,0 pt) |
 | **7** | **Dashboard Operacional** | Mínimo de 5 consultas SQL (enunciado + código) de nível operacional | ⚪ Não Iniciado |
 | **8** | **Dashboard Tático** | Mínimo de 5 consultas SQL (enunciado + código) de nível tático | ⚪ Não Iniciado |
 | **9** | **Dashboard Estratégico** | Mínimo de 5 consultas SQL (enunciado + código) de nível estratégico | ⚪ Não Iniciado |
