@@ -35,7 +35,8 @@ O projeto aplica a metodologia ativa **Problem-Based Learning (PBL)**, conectand
 | **7** | **[Dashboard Operacional](sql/05_consultas_operacional.sql)** | Mínimo de 5 consultas SQL (enunciado + código) de nível operacional | 🟢 Concluído (1,0 pt) |
 | **8** | **[Dashboard Tático](sql/06_consultas_tatico.sql)** | Mínimo de 5 consultas SQL (enunciado + código) de nível tático no Data Warehouse | 🟢 Concluído (1,0 pt) |
 | **9** | **[Dashboard Estratégico](sql/07_consultas_estrategico.sql)** | Mínimo de 5 consultas SQL (enunciado + código) de nível estratégico no Data Warehouse | 🟢 Concluído (1,0 pt) |
-| **10** | **Plano de Ação (5W2H)** | Plano de ação orientado por dados para suporte à gestão | ⚪ Não Iniciado |
+| **10** | **[Plano de Ação (5W2H)](docs/04_plano_acao_5w2h.md)** | Plano de ação estruturado em 4 diretrizes prioritárias orientado por dados | 🟢 Concluído (1,0 pt) |
+| **TOTAL** | | **Todos os 10 itens do barema implementados com sucesso** | **🟢 10,0 / 10,0 pts** |
 
 ---
 
