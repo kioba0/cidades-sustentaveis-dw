@@ -37,6 +37,8 @@ ENV/
 .env
 credentials.txt
 
-# Documentos internos e contexto para IA
+# Documentos internos e contexto para IA / Apresentação
 PLANEJAMENTO.md
+ROTEIRO_APRESENTACAO.md
+guia_mestre_apresentacao_ecocidade.md
 
