@@ -79,6 +79,8 @@ lab_dados/
 │   │   ├── emlurb_156_limpeza_urbana_2024.csv    # Base empírica bruta de 108.083 chamados (Recife)
 │   │   ├── salvador_156_limpeza_urbana_2024.csv  # Dataset consolidado de 11.622 casos de Salvador
 │   │   └── FONTE_DADOS_ABERTOS.md                # Metodologia de calibração empírica e linhagem
+│   ├── clusterizacao_kmeans.py                   # Script de mineração e segmentação AED (Item 6)
+│   ├── criar_dashboards_metabase.py              # Automação REST API para montagem dos 3 dashboards
 │   ├── ingestar_dados_reais.py                   # Amostragem estratificada e carga no Seed SQL (1.000 chamados)
 │   └── gerar_dataset_salvador.py                 # Pipeline de geração do dataset de Salvador para o K-Means
 │
@@ -94,8 +96,25 @@ lab_dados/
 └── docker/                        # Orquestração do ambiente de execução (Zero-Touch)
     ├── docker-compose.yml         # MySQL 8.0 + Metabase BI
     ├── README.md                  # Guia de inicialização e validação
-    └── init/                      # Cargas automatizadas de inicialização
+    ├── init/                      # Cargas automatizadas de inicialização
+    └── metabase-data/             # Estado persistente do Metabase (dashboards pré-configurados)
 ```
+
+---
+
+## 📊 Dashboards Interativos no Metabase BI (Itens 7, 8 e 9)
+
+O ambiente analítico conta com **3 Dashboards Interativos** construídos no Metabase BI sobre os ambientes `ecocidade_oltp` e `dw_ecocidade`:
+
+* **URL de Acesso:** `http://localhost:3000`
+* **Usuário:** `cerveja123@gmail.com`
+* **Senha:** `cerveja123`
+
+| Nível Decisório | Painel no Metabase | Base Conectada | Foco / Principais Questões |
+|---|---|:---:|---|
+| **Operacional (Chão de Fábrica)** | [Painel Operacional](http://localhost:3000/dashboard/103) | `ecocidade_oltp` | Monitoramento em tempo real de pesagens na balança, capacidade de Ecopontos e fila crítica de SLA do 156 (C1 a C5). |
+| **Tático (Médio Prazo)** | [Painel Tático](http://localhost:3000/dashboard/104) | `dw_ecocidade` | Custos de destinação por Prefeitura-Bairro, ecoeficiência da frota (kg/km), SLA por cluster e parcerias com cooperativas (C6 a C10). |
+| **Estratégico (Longo Prazo / ONU)** | [Painel Estratégico](http://localhost:3000/dashboard/105) | `dw_ecocidade` | Taxa de desvio de aterro (ODS 12.5), equidade de custo per capita, créditos climáticos de CO₂e e sobrevida do Aterro (C11 a C15). |
 
 ---
 
