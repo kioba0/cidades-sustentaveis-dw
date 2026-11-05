@@ -190,7 +190,19 @@ FROM (
     SELECT pc.id_ponto, pc.capacidade_m3, COALESCE(SUM(c.volume_estimado_m3), 0) AS vol
     FROM pontos_coleta pc
     LEFT JOIN chamados_descarte_irregular c
-        ON (c.id_ponto_coleta = pc.id_ponto OR (c.id_ponto_coleta IS NULL AND c.id_bairro = pc.id_bairro))
+        ON (
+            c.id_ponto_coleta = pc.id_ponto
+            OR (
+                c.id_ponto_coleta IS NULL 
+                AND c.id_bairro = pc.id_bairro
+                AND pc.id_ponto = (
+                    SELECT MIN(pc_sub.id_ponto) 
+                    FROM pontos_coleta pc_sub 
+                    WHERE pc_sub.id_bairro = pc.id_bairro 
+                      AND pc_sub.status_operacional = 'Ativo'
+                )
+            )
+        )
         AND c.status IN ('Aberto', 'Em Andamento')
     WHERE pc.status_operacional = 'Ativo'
     GROUP BY pc.id_ponto, pc.capacidade_m3
@@ -305,7 +317,19 @@ SELECT
 FROM pontos_coleta pc
 INNER JOIN bairros b ON pc.id_bairro = b.id_bairro
 LEFT JOIN chamados_descarte_irregular cdi
-    ON (cdi.id_ponto_coleta = pc.id_ponto OR (cdi.id_ponto_coleta IS NULL AND cdi.id_bairro = pc.id_bairro))
+    ON (
+        cdi.id_ponto_coleta = pc.id_ponto
+        OR (
+            cdi.id_ponto_coleta IS NULL 
+            AND cdi.id_bairro = pc.id_bairro
+            AND pc.id_ponto = (
+                SELECT MIN(pc_sub.id_ponto) 
+                FROM pontos_coleta pc_sub 
+                WHERE pc_sub.id_bairro = pc.id_bairro 
+                  AND pc_sub.status_operacional = 'Ativo'
+            )
+        )
+    )
     AND cdi.status IN ('Aberto', 'Em Andamento')
 WHERE pc.status_operacional = 'Ativo'
 GROUP BY pc.id_ponto, pc.nome_identificador, b.nome_bairro, pc.capacidade_m3

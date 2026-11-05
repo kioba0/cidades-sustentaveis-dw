@@ -102,7 +102,19 @@ FROM pontos_coleta pc
 INNER JOIN bairros b
     ON pc.id_bairro = b.id_bairro
 LEFT JOIN chamados_descarte_irregular cdi
-    ON (cdi.id_ponto_coleta = pc.id_ponto OR (cdi.id_ponto_coleta IS NULL AND cdi.id_bairro = pc.id_bairro))
+    ON (
+        cdi.id_ponto_coleta = pc.id_ponto
+        OR (
+            cdi.id_ponto_coleta IS NULL 
+            AND cdi.id_bairro = pc.id_bairro
+            AND pc.id_ponto = (
+                SELECT MIN(pc_sub.id_ponto) 
+                FROM pontos_coleta pc_sub 
+                WHERE pc_sub.id_bairro = pc.id_bairro 
+                  AND pc_sub.status_operacional = 'Ativo'
+            )
+        )
+    )
     AND cdi.status IN ('Aberto', 'Em Andamento')
 WHERE pc.status_operacional = 'Ativo'
 GROUP BY

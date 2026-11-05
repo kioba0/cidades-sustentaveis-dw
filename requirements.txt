@@ -1,0 +1,7 @@
+# Dependências de Análise de Dados e Mineração (K-Means)
+# Projeto EcoCidade — Laboratório de Dados para Cidades Sustentáveis (PBL / UNEB)
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+matplotlib>=3.8.0
+seaborn>=0.13.0

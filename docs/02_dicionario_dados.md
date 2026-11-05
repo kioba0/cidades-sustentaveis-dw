@@ -257,13 +257,19 @@
 | `sk_bairro` | `INT` | Não | **FK** | - | Chave do bairro atendido pela rota. |
 | `sk_tipo_residuo` | `INT` | Não | **FK** | - | Chave do tipo de resíduo transportado. |
 | `sk_veiculo` | `INT` | Não | **FK** | - | Chave do caminhão que realizou o transporte. |
+| `sk_bairro` | `INT` | Não | **FK** | - | Bairro gerador do resíduo (origem da rota de coleta). |
+| `sk_tipo_residuo` | `INT` | Não | **FK** | - | Categoria do material descarregado. |
+| `sk_veiculo` | `INT` | Não | **FK** | - | Veículo/caminhão que efetuou o transporte. |
 | `sk_destino` | `INT` | Não | **FK** | - | Chave da instalação que recebeu o resíduo. |
-| `codigo_rota_dd` | `VARCHAR(20)` | Não | **DD** | - | Dimensão Degenerada: Código da rota operacional. |
+| `codigo_rota_dd` | `VARCHAR(20)` | Não | **DD** | - | Dimensão Degenerada: Código da rota operacional (preserva itinerário origem-destino). |
 | `peso_liquido_ton` | `DECIMAL(8,3)` | Não | - | Totalmente Aditiva | Carga útil descarregada: `(peso_bruto - tara) / 1000`. |
 | `custo_destinacao_reais`|`DECIMAL(10,2)`| Não | - | Totalmente Aditiva | Custo financeiro público: `peso_ton * custo_ton_destino`. |
 | `tempo_descarregamento_minutos`|`INT` | Não | - | Totalmente Aditiva | Tempo em minutos despendido na manobra de descarga. |
 | `distancia_km` | `DECIMAL(6,2)` | Não | - | Totalmente Aditiva | Quilometragem estimada percorrida no turno. |
 | `emissoes_estimadas_co2_kg`|`DECIMAL(8,2)`| Não | - | Totalmente Aditiva | Emissão de carbono: `(distancia_km * emissao_g_km) / 1000`. |
+
+> [!NOTE]
+> **Decisão de Modelagem Geográfica:** Na tabela `fato_coleta_residuos`, a chave `sk_bairro` ancora o bairro de origem (`id_bairro_origem`), definindo o **polo gerador do resíduo** como grão espacial analítico. A dimensão degenerada `codigo_rota_dd` mantém o rastreamento do trajeto percorrido até o transbordo.
 
 ---
 
@@ -273,16 +279,16 @@
 | Atributo | Tipo de Dado | Nulo? | Chave | Tipo Métrica | Descrição e Fórmula de Cálculo |
 |---|---|:---:|:---:|:---:|---|
 | `sk_fato_ocorrencia` | `BIGINT` | Não | **PK** | - | Surrogate Key exclusiva do fato de descarte. |
-| `sk_tempo_abertura` | `INT` | Não | **FK** | - | Data em que o munícipe registrou o chamado. |
-| `sk_tempo_atendimento`| `INT` | Sim | **FK** | - | Data em que a prefeitura concluiu o recolhimento. |
+| `sk_tempo_abertura` | `INT` | Não | **FK** | - | Data em que o munícipe registrou o chamado no 156. |
+| `sk_tempo_atendimento`| `INT` | Sim | **FK** | - | Data em que a prefeitura concluiu o recolhimento (`NULL` = Chamado Aberto/Pendente). |
 | `sk_bairro` | `INT` | Não | **FK** | - | Bairro onde o lixo irregular foi descartado. |
-| `sk_veiculo_atendimento`|`INT` | Sim | **FK** | - | Caminhão caçamba que realizou o atendimento. |
+| `sk_veiculo_atendimento`|`INT` | Sim | **FK** | - | Caminhão caçamba que realizou o atendimento (`NULL` se não despachado). |
 | `sk_severidade` | `INT` | Não | **FK** | - | Nível de risco da ocorrência (encosta, bueiro, via). |
-| `protocolo_cidadao_dd`| `VARCHAR(30)` | Não | **DD** | - | Dimensão Degenerada: Protocolo 156 do cidadão. |
-| `status_chamado_dd` | `VARCHAR(30)` | Não | **DD** | - | Dimensão Degenerada: Status atual ('Concluido', 'Aberto'). |
-| `tempo_resolucao_horas`| `DECIMAL(6,1)`| Sim | - | Semi-Aditiva | SLA em horas decorridas: `TIMESTAMPDIFF(HOUR, abertura, atendimento)`. |
+| `protocolo_cidadao_dd`| `VARCHAR(30)` | Não | **DD** | - | Dimensão Degenerada: Protocolo Fala Salvador 156. |
+| `status_chamado_dd` | `VARCHAR(30)` | Não | **DD** | - | Dimensão Degenerada: Status atual ('Concluido', 'Aberto', 'Em Andamento'). |
+| `tempo_resolucao_horas`| `DECIMAL(6,1)`| Sim | - | **Não-Aditiva** | SLA em horas: `ROUND(TIMESTAMPDIFF(MINUTE, abertura, atendimento) / 60.0, 1)`. Métrica não-aditiva agregada via média ou mediana. |
 | `volume_estimado_m3` | `DECIMAL(6,2)` | Não | - | Totalmente Aditiva | Volume volumétrico de entulho recolhido. |
-| `custo_remocao_reais` | `DECIMAL(10,2)`| Não | - | Totalmente Aditiva | Custo da operação emergencial de zeladoria. |
+| `custo_remocao_reais` | `DECIMAL(10,2)`| Não | - | Totalmente Aditiva | Custo da operação emergencial: `volume_estimado_m3 * R$ 85,00` (tarifa referencial hora-máquina de retroescavadeira/caçamba). |
 
 ---
 

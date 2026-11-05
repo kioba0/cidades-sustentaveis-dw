@@ -61,7 +61,9 @@ Para municiar o Data Warehouse e o algoritmo de Mineração de Dados (K-Means) c
    * Cada chamado recebe um protocolo oficial no formato `SSA-156-2024-XXXXX` (*Fala Salvador*).
    * A chave estrangeira `id_bairro` aponta para um dos 16 bairros oficiais de Salvador (`Centro Histórico`, `Brotas`, `Barra`, `Pituba`, `Liberdade`, `São Caetano`, `Periperi`, `Paripe`, `Cajazeiras X`, `Itapuã`, etc.).
    * A descrição do chamado recebe um logradouro real do respectivo bairro (ex: *Ladeira dos Galés* em Brotas, *Estrada da Paciência* em Cajazeiras, *Av. Afrânio Peixoto* em Periperi).
-   * Bairros de encosta e alta vulnerabilidade recebem pesos calibrados para maior severidade de risco geológico e alagamento.
+   * **Fundamentação Metodológica dos Pesos Amostrais:** A probabilidade de distribuição dos chamados foi calibrada cientificamente cruzando duas fontes oficiais de dados públicos:
+     1. **Densidade Demográfica (Censo IBGE 2022):** Bairros de grande porte populacional (Liberdade, São Caetano, Brotas e Cajazeiras X) recebem maior densidade base de solicitações.
+     2. **Carta de Risco Geotécnico e Encostas da Defesa Civil de Salvador (Codesal / Plano Municipal de Redução de Riscos):** Zonas de alta declividade e taludes críticos (Liberdade, São Caetano, Periperi, Paripe e Plataforma) receberam pesos elevados (0.08 a 0.09) para bota-fora clandestino de RCD e severidade crítica, enquanto bairros de orla litorânea plana (Barra, Pituba, Rio Vermelho e Ondina) receberam pesos reduzidos para entulho (0.03 a 0.05) e concentração de demanda por coleta seletiva.
 5. **Carga e Idempotência:**
    * Geração automática das instruções `INSERT` em `sql/02_oltp_seed.sql` e `docker/init/02_oltp_seed.sql`.
    * Propagação automática para o Data Warehouse (`dw_ecocidade.fato_ocorrencias_descarte`) pelo pipeline `sql/04_etl_pipeline.sql`.

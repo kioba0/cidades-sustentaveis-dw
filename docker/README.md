@@ -27,17 +27,27 @@ docker compose up -d
 | Serviço | URL / Host | Porta | Usuário / Login | Senha |
 |---|---|:---:|---|---|
 | **MySQL 8.0** | `localhost` | `3306` | `root` | `root` |
-| **Metabase BI** | `http://localhost:3000` | `3000` | *(configuração inicial na interface)* | - |
+| **Metabase BI** | `http://localhost:3000` | `3000` | `cerveja123@gmail.com` | `cerveja123` |
+
+> [!NOTE]
+> O Metabase já inicia com os **3 Dashboards e 27 Cards pré-configurados** via banco H2 persistido em `docker/metabase-data/`.  
+> Em distribuições Linux com controle estrito de permissões de volume, recomenda-se garantir permissão de escrita ao container executando previamente:
+> ```bash
+> chmod -R 777 metabase-data/
+> ```
 
 ---
 
-## 🔍 Como Validar os Dados via Linha de Comando:
+## 🔍 Como Validar os Dados e Integridade:
 
 ```bash
-# Validar contagem no ambiente transacional OLTP
+# 1. Executar a suíte de asserções e testes automatizados de integridade
+docker exec -i ecocidade_mysql mysql -uroot -proot < ../sql/08_testes_integridade.sql
+
+# 2. Validar contagem no ambiente transacional OLTP
 docker exec -i ecocidade_mysql mysql -uroot -proot -e "USE ecocidade_oltp; SHOW TABLES;"
 
-# Validar contagem no Data Warehouse OLAP
+# 3. Validar contagem no Data Warehouse OLAP
 docker exec -i ecocidade_mysql mysql -uroot -proot -e "
 USE dw_ecocidade;
 SELECT 'dim_tempo' AS tabela, COUNT(*) AS total FROM dim_tempo

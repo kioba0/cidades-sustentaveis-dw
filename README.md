@@ -91,14 +91,47 @@ lab_dados/
 │   ├── 04_etl_pipeline.sql        # Procedimentos de ETL e transformação (Item 5)
 │   ├── 05_consultas_operacional.sql # 5 Consultas operacionais (Item 7)
 │   ├── 06_consultas_tatico.sql     # 5 Consultas táticas (Item 8)
-│   └── 07_consultas_estrategico.sql# 5 Consultas estratégicas (Item 9)
+│   ├── 07_consultas_estrategico.sql# 5 Consultas estratégicas (Item 9)
+│   └── 08_testes_integridade.sql   # Suíte automatizada de testes e asserções de integridade
 │
-└── docker/                        # Orquestração do ambiente de execução (Zero-Touch)
-    ├── docker-compose.yml         # MySQL 8.0 + Metabase BI
-    ├── README.md                  # Guia de inicialização e validação
-    ├── init/                      # Cargas automatizadas de inicialização
-    └── metabase-data/             # Estado persistente do Metabase (dashboards pré-configurados)
+├── docker/                        # Orquestração do ambiente de execução (Zero-Touch)
+│   ├── docker-compose.yml         # MySQL 8.0 + Metabase BI
+│   ├── README.md                  # Guia de inicialização e validação
+│   ├── init/                      # Cargas automatizadas de inicialização
+│   └── metabase-data/             # Estado persistente do Metabase (dashboards pré-configurados)
+│
+└── requirements.txt               # Dependências Python (pandas, scikit-learn, matplotlib, seaborn)
 ```
+
+---
+
+## 🚀 Como Executar o Projeto Localmente
+
+### 1. Inicializar Bancos e Dashboards (Docker Zero-Touch)
+```bash
+cd docker/
+# (Opcional no Linux para garantir escrita no volume H2): chmod -R 777 metabase-data/
+docker compose up -d
+```
+* **MySQL 8.0:** Porta `3306` (`root` / `root`) com os bancos `ecocidade_oltp` e `dw_ecocidade` criados e populados automaticamente.
+* **Metabase BI:** [http://localhost:3000](http://localhost:3000) (`cerveja123@gmail.com` / `cerveja123`).
+
+### 2. Executar a Suíte de Testes Automatizados de Integridade SQL
+```bash
+docker exec -i ecocidade_mysql mysql -uroot -proot < sql/08_testes_integridade.sql
+```
+*Executa 7 asserções de paridade volumétrica, ausência de órfãos, consistência temporal e domínio positivo.*
+
+### 3. Executar a Mineração K-Means e Análise Exploratória (Python)
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python3 analise/clusterizacao_kmeans.py
+```
+*Processa os 11.622 registros de Salvador e gera os 4 gráficos científicos em `analise/graficos/`.*
+
+---
 
 ---
 
@@ -112,9 +145,9 @@ O ambiente analítico conta com **3 Dashboards Interativos** construídos no Met
 
 | Nível Decisório | Painel no Metabase | Base Conectada | Foco / Principais Questões |
 |---|---|:---:|---|
-| **Operacional (Chão de Fábrica)** | [Painel Operacional](http://localhost:3000/dashboard/106) | `ecocidade_oltp` | 4 Scorecards (Frota, Balança, Fila 156, Ecopontos) + Fila Crítica de Encostas com prioridade máxima + Balança e Produtividade (C1 a C5). |
-| **Tático (Médio Prazo)** | [Painel Tático](http://localhost:3000/dashboard/107) | `dw_ecocidade` | 3 Scorecards (Custo Médio/ton, Economia Cooperativas, SLA Crítico) + Dispersão K-Means (Risco vs SLA) + Custos e Auditoria (C6 a C10). |
-| **Estratégico (Longo Prazo / ONU)** | [Painel Estratégico](http://localhost:3000/dashboard/108) | `dw_ecocidade` | 3 Scorecards (Taxa Desvio, CO₂e Mitigado, Sobrevida) + Linha com Meta ONU 65% + Composição Gravimétrica (Pizza/Donut) e Cenários (C11 a C15). |
+| **Operacional (Chão de Fábrica)** | [Painel Operacional](http://localhost:3000/dashboard/109) | `ecocidade_oltp` | 4 Scorecards (Frota, Balança, Fila 156, Ecopontos) + Fila Crítica de Encostas com prioridade máxima + Balança e Produtividade (C1 a C5). |
+| **Tático (Médio Prazo)** | [Painel Tático](http://localhost:3000/dashboard/110) | `dw_ecocidade` | 3 Scorecards (Custo Médio/ton, Economia Cooperativas, SLA Crítico) + Dispersão K-Means (Risco vs SLA) + Custos e Auditoria (C6 a C10). |
+| **Estratégico (Longo Prazo / ONU)** | [Painel Estratégico](http://localhost:3000/dashboard/111) | `dw_ecocidade` | 3 Scorecards (Taxa Desvio, CO₂e Mitigado, Sobrevida) + Linha com Meta ONU 65% + Composição Gravimétrica (Pizza/Donut) e Cenários (C11 a C15). |
 
 ---
 
