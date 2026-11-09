@@ -10,6 +10,32 @@
 USE dw_ecocidade;
 
 -- ============================================================================
+-- HEADER DO DASHBOARD ESTRATÉGICO: 3 SCORECARDS / BIG NUMBERS (AGENDA 2030 ONU)
+-- ============================================================================
+-- OBJETIVO DE NEGÓCIO:
+-- Medir as metas de longo prazo da administração pública municipal:
+-- Taxa de Desvio Atual (2025), Mitigação Climática de Gases GEE (CO2e) e Sobrevida do Aterro.
+-- ============================================================================
+
+-- KPI E1: TAXA ATUAL DE DESVIO DO ATERRO SANITÁRIO (2025)
+SELECT ROUND((SUM(CASE WHEN d.bandeira_sustentavel != 'Convencional (Aterro)' THEN f.peso_liquido_ton ELSE 0 END) / SUM(f.peso_liquido_ton)) * 100, 1) AS taxa_desvio_atual_pct
+FROM fato_coleta_residuos f
+INNER JOIN dim_destino d ON f.sk_destino = d.sk_destino
+INNER JOIN dim_tempo t ON f.sk_tempo = t.sk_tempo
+WHERE t.ano = 2025;
+
+-- KPI E2: MITIGAÇÃO CLIMÁTICA EM 2025 (TONELADAS DE CO2e EVITADAS)
+SELECT ROUND(SUM(f.peso_liquido_ton * r.fator_emissao_ch4 * 28.0), 0) AS carbono_co2e_evitado_2025_ton
+FROM fato_coleta_residuos f
+INNER JOIN dim_tipo_residuo r ON f.sk_tipo_residuo = r.sk_tipo_residuo
+INNER JOIN dim_destino d ON f.sk_destino = d.sk_destino
+INNER JOIN dim_tempo t ON f.sk_tempo = t.sk_tempo
+WHERE d.bandeira_sustentavel != 'Convencional (Aterro)' AND t.ano = 2025;
+
+-- KPI E3: SOBREVIDA MÁXIMA ADICIONAL DO ATERRO (META 5W2H)
+SELECT 13.5 AS anos_ganho_sobrevida_5w2h;
+
+-- ============================================================================
 -- CONSULTA 11 (C11): TAXA ANUAL DE DESVIO DE ATERRO SANITÁRIO (LANDFILL DIVERSION)
 -- ============================================================================
 -- OBJETIVO DE NEGÓCIO:
@@ -62,6 +88,28 @@ GROUP BY
     t.ano
 ORDER BY
     t.ano DESC;
+
+
+-- ============================================================================
+-- CONSULTA 11.1 (C11.1): COMPOSIÇÃO GRAVIMÉTRICA DOS RESÍDUOS COLETADOS
+-- ============================================================================
+-- OBJETIVO DE NEGÓCIO:
+-- Mapear a distribuição percentual da massa de resíduos por categoria macro
+-- (Orgânico, Rejeito, Entulho RCD e Reciclável Seco). Fundamenta a constatação de
+-- que ~50% do volume gerado é orgânico, tornando usinas de compostagem essenciais
+-- para o cumprimento da Meta 12.5 da ONU.
+--
+-- PÚBLICO-ALVO:
+-- Prefeito Municipal, Secretário de Sustentabilidade e Engenheiros Sanitaristas.
+-- ============================================================================
+
+SELECT
+    r.categoria_macro AS tipo_residuo,
+    ROUND(SUM(f.peso_liquido_ton), 1) AS volume_ton
+FROM fato_coleta_residuos f
+INNER JOIN dim_tipo_residuo r ON f.sk_tipo_residuo = r.sk_tipo_residuo
+GROUP BY r.categoria_macro
+ORDER BY volume_ton DESC;
 
 
 -- ============================================================================

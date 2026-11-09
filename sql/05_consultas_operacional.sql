@@ -10,6 +10,55 @@
 USE ecocidade_oltp;
 
 -- ============================================================================
+-- HEADER DO DASHBOARD OPERACIONAL: 4 SCORECARDS / BIG NUMBERS (PULSO DE 5 SEG)
+-- ============================================================================
+-- OBJETIVO DE NEGÓCIO:
+-- Fornecer ao despachante e à sala de controle da Limpurb um panorama instantâneo
+-- da operação de campo em menos de 5 segundos, cobrindo frotas, balança rodoviária,
+-- risco geológico de encostas e saturação de ecopontos.
+-- ============================================================================
+
+-- KPI O1: CAMINHÕES OPERACIONAIS EM TRÂNSITO
+SELECT COUNT(*) AS caminhoes_ativos 
+FROM veiculos_frota 
+WHERE status = 'Operacional';
+
+-- KPI O2: TEMPO MÉDIO DE BALANÇA RODOVIÁRIA (MINUTOS)
+SELECT ROUND(AVG(tempo_descarregamento_minutos), 1) AS tempo_medio_balanca_min 
+FROM pesagens_coleta;
+
+-- KPI O3: CHAMADOS CRÍTICOS EM RISCO DE ENCOSTA (FILA ABERTA)
+SELECT COUNT(*) AS chamados_encostas_criticos 
+FROM chamados_descarte_irregular 
+WHERE severidade_risco = 'Critico / Risco Encosta ou Alagamento' 
+  AND status IN ('Aberto', 'Em Andamento');
+
+-- KPI O4: ECOPONTOS EM NÍVEL DE ALERTA (> 70% DA CAPACIDADE)
+SELECT COUNT(*) AS ecopontos_em_alerta
+FROM (
+    SELECT pc.id_ponto, pc.capacidade_m3, COALESCE(SUM(c.volume_estimado_m3), 0) AS vol
+    FROM pontos_coleta pc
+    LEFT JOIN chamados_descarte_irregular c
+        ON (
+            c.id_ponto_coleta = pc.id_ponto
+            OR (
+                c.id_ponto_coleta IS NULL 
+                AND c.id_bairro = pc.id_bairro
+                AND pc.id_ponto = (
+                    SELECT MIN(pc_sub.id_ponto) 
+                    FROM pontos_coleta pc_sub 
+                    WHERE pc_sub.id_bairro = pc.id_bairro 
+                      AND pc_sub.status_operacional = 'Ativo'
+                )
+            )
+        )
+        AND c.status IN ('Aberto', 'Em Andamento')
+    WHERE pc.status_operacional = 'Ativo'
+    GROUP BY pc.id_ponto, pc.capacidade_m3
+    HAVING vol >= (pc.capacidade_m3 * 0.70)
+) sub;
+
+-- ============================================================================
 -- CONSULTA 1 (C1): CONTROLE DE BALANÇA & DETECÇÃO DE FILAS DE DESCARREGAMENTO
 -- ============================================================================
 -- OBJETIVO DE NEGÓCIO:

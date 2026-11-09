@@ -41,4 +41,8 @@ credentials.txt
 PLANEJAMENTO.md
 ROTEIRO_APRESENTACAO.md
 guia_mestre_apresentacao_ecocidade.md
+falas_slides.txt
+slide_final.pdf
+*.pptx
+gerar_slides_ecocidade.py
 

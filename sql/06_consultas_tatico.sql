@@ -10,6 +10,30 @@
 USE dw_ecocidade;
 
 -- ============================================================================
+-- HEADER DO DASHBOARD TÁTICO: 3 SCORECARDS / BIG NUMBERS (GESTÃO MENSAL)
+-- ============================================================================
+-- OBJETIVO DE NEGÓCIO:
+-- Exibir os macroindicadores táticos de eficiência de contratos e impacto social:
+-- Custo Médio Ponderado por Tonelada, Economia Líquida de Cooperativas e SLA Crítico.
+-- ============================================================================
+
+-- KPI T1: CUSTO MÉDIO PONDERADO POR TONELADA (R$/TON)
+SELECT ROUND(SUM(custo_destinacao_reais) / SUM(peso_liquido_ton), 2) AS custo_medio_por_ton_reais 
+FROM fato_coleta_residuos;
+
+-- KPI T2: ECONOMIA LÍQUIDA GERADA POR COOPERATIVAS (R$)
+SELECT ROUND(SUM(f.peso_liquido_ton * 95.50) - SUM(f.custo_destinacao_reais), 2) AS economia_liquida_cooperativas_reais
+FROM fato_coleta_residuos f
+INNER JOIN dim_destino d ON f.sk_destino = d.sk_destino
+WHERE d.tipo_instalacao = 'Centro de Triagem Cooperativa';
+
+-- KPI T3: SLA MÉDIO NO CLUSTER 1 CRÍTICO (HORAS)
+SELECT ROUND(AVG(fo.tempo_resolucao_horas), 1) AS sla_medio_cluster_critico_horas
+FROM fato_ocorrencias_descarte fo
+INNER JOIN dim_bairro b ON fo.sk_bairro = b.sk_bairro
+WHERE b.regiao_administrativa IN ('Liberdade/Sao Caetano', 'Suburbio Ferroviario');
+
+-- ============================================================================
 -- CONSULTA 6 (C6): CUSTO MENSAL DE DESTINAÇÃO FINAL POR PREFEITURA-BAIRRO
 -- ============================================================================
 -- OBJETIVO DE NEGÓCIO:
@@ -156,6 +180,35 @@ GROUP BY
     b.regiao_administrativa
 ORDER BY
     sla_medio_horas DESC;
+
+
+-- ============================================================================
+-- CONSULTA 8.1 (C8.1): DISPERSÃO K-MEANS: RISCO DE ENCOSTA (%) VS SLA (HORAS)
+-- ============================================================================
+-- OBJETIVO DE NEGÓCIO:
+-- Subsidiar a visualização em Gráfico de Dispersão (Scatter Plot) no Metabase,
+-- correlacionando a proporção de ocorrências em áreas de risco geológico com o
+-- tempo médio de resposta da prefeitura para cada um dos 16 bairros monitorados.
+-- Evidencia visualmente a segregação socioespacial e o gargalo logístico no Cluster 1.
+--
+-- PÚBLICO-ALVO:
+-- Gestores do Plano Municipal de Redução de Riscos, Defesa Civil (Codesal) e Limpurb.
+-- ============================================================================
+
+SELECT
+    b.nome_bairro,
+    ROUND((SUM(CASE WHEN s.impacto_risco_geologico = 'Sim' THEN 1 ELSE 0 END) / COUNT(fo.sk_fato_ocorrencia)) * 100, 1) AS pct_risco_encosta,
+    ROUND(AVG(fo.tempo_resolucao_horas), 1) AS sla_medio_horas,
+    CASE
+        WHEN b.regiao_administrativa IN ('Liberdade/Sao Caetano', 'Suburbio Ferroviario') THEN '🔴 Cluster 1: Crítico'
+        WHEN b.regiao_administrativa = 'Barra/Pituba' THEN '🟢 Cluster 3: Seletivo'
+        ELSE '🔵 Cluster 2: Regular'
+    END AS cluster_kmeans
+FROM fato_ocorrencias_descarte fo
+INNER JOIN dim_bairro b ON fo.sk_bairro = b.sk_bairro
+INNER JOIN dim_severidade s ON fo.sk_severidade = s.sk_severidade
+GROUP BY b.nome_bairro, b.regiao_administrativa
+ORDER BY pct_risco_encosta DESC;
 
 
 -- ============================================================================
