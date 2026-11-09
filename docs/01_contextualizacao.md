@@ -21,7 +21,7 @@ A solução visa instrumentalizar gestores públicos com diagnósticos precisos,
 
 ## 2. Problematização do Cenário Municipal (Salvador - BA)
 
-Para conferir aderência prática e validação empírica imediata, o projeto ancora seu domínio territorial e operacional na cidade de **Salvador, Bahia** — a terceira capital mais populosa do Brasil, com aproximadamente 2,4 milhões de habitantes distribuídos em relevo topográfico singular marcado por espigões, vales, encostas acentuadas e extensa orla marítima.
+Para conferir aderência prática e validação empírica imediata, o projeto ancora seu domínio territorial e operacional na cidade de **Salvador, Bahia** — [a quinta cidade mais populosa do Brasil](https://noticias.uol.com.br/ultimas-noticias/agencia-estado/2026/08/28/quais-capitais-mais-cresceram-no-brasil-veja-nova-lista-do-ibge.htm), com aproximadamente 2,5 milhões de habitantes distribuídos em relevo topográfico singular marcado por espigões, vales, encostas acentuadas e extensa orla marítima.
 
 A estrutura administrativa municipal é dividida em **10 Prefeituras-Bairro** (Centro/Brotas, Subúrbio Ferroviário/Ilhas, Cajazeiras, Itapuã, Pau da Lima, Cabula/Tancredo Neves, Barra/Pituba, Liberdade/São Caetano, Cidade Baixa e Valéria). Essa heterogeneidade socioespacial gera padrões distintos de descarte e desafios logísticos crônicos, estruturados em quatro gargalos fundamentais:
 
